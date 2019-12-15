@@ -354,11 +354,11 @@ type Article struct {
 
 // Article fixture data
 var data = []*Article{
-	{ID: "1", UserID: 100, Title: "Hi"},
-	{ID: "2", UserID: 200, Title: "sup"},
-	{ID: "3", UserID: 300, Title: "alo"},
-	{ID: "4", UserID: 400, Title: "bonjour"},
-	{ID: "5", UserID: 500, Title: "whats up"},
+	{ID: "1", UserID: 100, Title: "Halo"},
+	{ID: "2", UserID: 200, Title: "Dunia"},
+	{ID: "3", UserID: 300, Title: "Aku"},
+	{ID: "4", UserID: 400, Title: "Masih"},
+	{ID: "5", UserID: 500, Title: "Jomblo"},
 }
 
 // // User fixture data
