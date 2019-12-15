@@ -255,7 +255,7 @@ type ArticleResponse struct {
 
 	// We add an additional field to the response here.. such as this
 	// elapsed computed property
-	Elapsed int64 `json:"elapsed"`
+	// Elapsed int64 `json:"elapsed"`
 }
 
 func NewArticleResponse(article *Article) *ArticleResponse {
@@ -272,7 +272,7 @@ func NewArticleResponse(article *Article) *ArticleResponse {
 
 func (rd *ArticleResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	// Pre-processing before a response is marshalled and sent across the wire
-	rd.Elapsed = 10
+	// rd.Elapsed = 10
 	return nil
 }
 

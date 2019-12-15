@@ -1,7 +1,7 @@
 //
 // REST
 // ====
-// This example demonstrates a HTTP REST web service with some fixture data.
+// This example demonstrates a HTTP REST web service with some fixture Blog.
 // Follow along the example and patterns.
 //
 // Boot the server:
@@ -13,25 +13,25 @@
 // $ curl http://localhost:3333/
 // Halo Dunia!.
 //
-// $ curl http://localhost:3333/data
+// $ curl http://localhost:3333/Blog
 // [{"id":"1","title":"Hi"},{"id":"2","title":"sup"}]
 //
-// $ curl http://localhost:3333/data/1
+// $ curl http://localhost:3333/Blog/1
 // {"id":"1","title":"Hi"}
 //
-// $ curl -X DELETE http://localhost:3333/data/1
+// $ curl -X DELETE http://localhost:3333/Blog/1
 // {"id":"1","title":"Hi"}
 //
-// $ curl http://localhost:3333/data/1
+// $ curl http://localhost:3333/Blog/1
 // "Not Found"
 //
-// $ curl -X POST -d '{"id":"will-be-omitted","title":"awesomeness"}' http://localhost:3333/data
+// $ curl -X POST -d '{"id":"will-be-omitted","title":"awesomeness"}' http://localhost:3333/Blog
 // {"id":"97","title":"awesomeness"}
 //
-// $ curl http://localhost:3333/data/97
+// $ curl http://localhost:3333/Blog/97
 // {"id":"97","title":"awesomeness"}
 //
-// $ curl http://localhost:3333/data
+// $ curl http://localhost:3333/Blog
 // [{"id":"2","title":"sup"},{"id":"97","title":"awesomeness"}]
 //
 package main
@@ -70,21 +70,21 @@ func main() {
 		panic("test")
 	})
 
-	// RESTy routes for "data" resource
-	r.Route("/data", func(r chi.Router) {
+	// RESTy routes for "Blog" resource
+	r.Route("/Blog", func(r chi.Router) {
 		r.With(paginate).Get("/", DataList)
-		r.Post("/", CreateArticle)       // POST /data
-		r.Get("/search", SearchArticles) // GET /data/search
+		r.Post("/", CreateArticle)       // POST /Blog
+		r.Get("/search", SearchArticles) // GET /Blog/search
 
 		r.Route("/{data_ID}", func(r chi.Router) {
 			r.Use(ArticleCtx)            // Load the *Article on the request context
-			r.Get("/", GetArticle)       // GET /data/123
-			r.Put("/", UpdateArticle)    // PUT /data/123
-			r.Delete("/", DeleteArticle) // DELETE /data/123
+			r.Get("/", GetArticle)       // GET /Blog/123
+			r.Put("/", UpdateArticle)    // PUT /Blog/123
+			r.Delete("/", DeleteArticle) // DELETE /Blog/123
 		})
 
-		// GET /data/whats-up
-		// r.With(ArticleCtx).Get("/{dataSlug:[a-z-]+}", GetArticle)
+		// GET /Blog/whats-up
+		// r.With(ArticleCtx).Get("/{BlogSlug:[a-z-]+}", GetArticle)
 	})
 
 	// Mount the admin sub-router, which btw is the same as:
