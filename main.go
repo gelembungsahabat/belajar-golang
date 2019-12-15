@@ -4,48 +4,44 @@
 // This example demonstrates a HTTP REST web service with some fixture data.
 // Follow along the example and patterns.
 //
-// Also check routes.json for the generated docs from passing the -routes flag
-//
 // Boot the server:
 // ----------------
-// $ go run main.go
+// $ go run *.go
 //
 // Client requests:
 // ----------------
 // $ curl http://localhost:3333/
-// root.
+// Halo Dunia!.
 //
-// $ curl http://localhost:3333/articles
+// $ curl http://localhost:3333/data
 // [{"id":"1","title":"Hi"},{"id":"2","title":"sup"}]
 //
-// $ curl http://localhost:3333/articles/1
+// $ curl http://localhost:3333/data/1
 // {"id":"1","title":"Hi"}
 //
-// $ curl -X DELETE http://localhost:3333/articles/1
+// $ curl -X DELETE http://localhost:3333/data/1
 // {"id":"1","title":"Hi"}
 //
-// $ curl http://localhost:3333/articles/1
+// $ curl http://localhost:3333/data/1
 // "Not Found"
 //
-// $ curl -X POST -d '{"id":"will-be-omitted","title":"awesomeness"}' http://localhost:3333/articles
+// $ curl -X POST -d '{"id":"will-be-omitted","title":"awesomeness"}' http://localhost:3333/data
 // {"id":"97","title":"awesomeness"}
 //
-// $ curl http://localhost:3333/articles/97
+// $ curl http://localhost:3333/data/97
 // {"id":"97","title":"awesomeness"}
 //
-// $ curl http://localhost:3333/articles
+// $ curl http://localhost:3333/data
 // [{"id":"2","title":"sup"},{"id":"97","title":"awesomeness"}]
 //
 package main
 
 import (
 	"flag"
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/go-chi/docgen"
 	"github.com/go-chi/render"
 )
 
@@ -63,7 +59,7 @@ func main() {
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("root."))
+		w.Write([]byte("Halo Dunia!."))
 	})
 
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
@@ -74,38 +70,26 @@ func main() {
 		panic("test")
 	})
 
-	// RESTy routes for "articles" resource
-	r.Route("/articles", func(r chi.Router) {
-		r.With(paginate).Get("/", ListArticles)
-		r.Post("/", CreateArticle)       // POST /articles
-		r.Get("/search", SearchArticles) // GET /articles/search
+	// RESTy routes for "data" resource
+	r.Route("/data", func(r chi.Router) {
+		r.With(paginate).Get("/", DataList)
+		r.Post("/", CreateArticle)       // POST /data
+		r.Get("/search", SearchArticles) // GET /data/search
 
-		r.Route("/{articleID}", func(r chi.Router) {
+		r.Route("/{data_ID}", func(r chi.Router) {
 			r.Use(ArticleCtx)            // Load the *Article on the request context
-			r.Get("/", GetArticle)       // GET /articles/123
-			r.Put("/", UpdateArticle)    // PUT /articles/123
-			r.Delete("/", DeleteArticle) // DELETE /articles/123
+			r.Get("/", GetArticle)       // GET /data/123
+			r.Put("/", UpdateArticle)    // PUT /data/123
+			r.Delete("/", DeleteArticle) // DELETE /data/123
 		})
 
-		// GET /articles/whats-up
-		r.With(ArticleCtx).Get("/{articleSlug:[a-z-]+}", GetArticle)
+		// GET /data/whats-up
+		// r.With(ArticleCtx).Get("/{dataSlug:[a-z-]+}", GetArticle)
 	})
 
 	// Mount the admin sub-router, which btw is the same as:
 	// r.Route("/admin", func(r chi.Router) { admin routes here })
 	r.Mount("/admin", adminRouter())
-
-	// Passing -routes to the program will generate docs for the above
-	// router definition. See the `routes.json` file in this folder for
-	// the output.
-	if *routes {
-		// fmt.Println(docgen.JSONRoutesDoc(r))
-		fmt.Println(docgen.MarkdownRoutesDoc(r, docgen.MarkdownOpts{
-			ProjectPath: "github.com/go-chi/chi",
-			Intro:       "Welcome to the chi/_examples/rest generated docs.",
-		}))
-		return
-	}
 
 	http.ListenAndServe(":3333", r)
 }

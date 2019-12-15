@@ -12,14 +12,14 @@ import (
 	"github.com/go-chi/render"
 )
 
-func ListArticles(w http.ResponseWriter, r *http.Request) {
-	if err := render.RenderList(w, r, NewArticleListResponse(articles)); err != nil {
+func DataList(w http.ResponseWriter, r *http.Request) {
+	if err := render.RenderList(w, r, NewArticleListResponse(data)); err != nil {
 		render.Render(w, r, ErrRender(err))
 		return
 	}
 }
 
-// ArticleCtx middleware is used to load an Article object from
+// ArticleCtx middleware is used to load an "data" object from
 // the URL parameters passed through as the request. In case
 // the Article could not be found, we stop here and return a 404.
 func ArticleCtx(next http.Handler) http.Handler {
@@ -27,10 +27,10 @@ func ArticleCtx(next http.Handler) http.Handler {
 		var article *Article
 		var err error
 
-		if articleID := chi.URLParam(r, "articleID"); articleID != "" {
-			article, err = dbGetArticle(articleID)
-		} else if articleSlug := chi.URLParam(r, "articleSlug"); articleSlug != "" {
-			article, err = dbGetArticleBySlug(articleSlug)
+		if data_ID := chi.URLParam(r, "data_ID"); data_ID != "" {
+			article, err = dbGetArticle(data_ID)
+		} else if dataSlug := chi.URLParam(r, "dataSlug"); dataSlug != "" {
+			// article, err = dbGetArticleBySlug(dataSlug)
 		} else {
 			render.Render(w, r, ErrNotFound)
 			return
@@ -48,7 +48,7 @@ func ArticleCtx(next http.Handler) http.Handler {
 // SearchArticles searches the Articles data for a matching article.
 // It's just a stub, but you get the idea.
 func SearchArticles(w http.ResponseWriter, r *http.Request) {
-	render.RenderList(w, r, NewArticleListResponse(articles))
+	render.RenderList(w, r, NewArticleListResponse(data))
 }
 
 // CreateArticle persists the posted Article and returns it
@@ -262,9 +262,9 @@ func NewArticleResponse(article *Article) *ArticleResponse {
 	resp := &ArticleResponse{Article: article}
 
 	if resp.User == nil {
-		if user, _ := dbGetUser(resp.UserID); user != nil {
-			resp.User = NewUserPayloadResponse(user)
-		}
+		// if user, _ := dbGetUser(resp.UserID); user != nil {
+		// 	resp.User = NewUserPayloadResponse(user)
+		// }
 	}
 
 	return resp
@@ -276,9 +276,9 @@ func (rd *ArticleResponse) Render(w http.ResponseWriter, r *http.Request) error 
 	return nil
 }
 
-func NewArticleListResponse(articles []*Article) []render.Renderer {
+func NewArticleListResponse(data []*Article) []render.Renderer {
 	list := []render.Renderer{}
-	for _, article := range articles {
+	for _, article := range data {
 		list = append(list, NewArticleResponse(article))
 	}
 	return list
@@ -349,11 +349,11 @@ type Article struct {
 	ID     string `json:"id"`
 	UserID int64  `json:"user_id"` // the author
 	Title  string `json:"title"`
-	Slug   string `json:"slug"`
+	// Slug   string `json:"slug"`
 }
 
 // Article fixture data
-var articles = []*Article{
+var data = []*Article{
 	{ID: "1", UserID: 100, Title: "Hi"},
 	{ID: "2", UserID: 200, Title: "sup"},
 	{ID: "3", UserID: 300, Title: "alo"},
@@ -361,40 +361,40 @@ var articles = []*Article{
 	{ID: "5", UserID: 500, Title: "whats up"},
 }
 
-// User fixture data
-var users = []*User{
-	{ID: 100, Name: "Peter"},
-	{ID: 200, Name: "Julia"},
-}
+// // User fixture data
+// var users = []*User{
+// 	{ID: 100, Name: "Peter"},
+// 	{ID: 200, Name: "Julia"},
+// }
 
 func dbNewArticle(article *Article) (string, error) {
 	article.ID = fmt.Sprintf("%d", rand.Intn(100)+10)
-	articles = append(articles, article)
+	data = append(data, article)
 	return article.ID, nil
 }
 
 func dbGetArticle(id string) (*Article, error) {
-	for _, a := range articles {
+	for _, a := range data {
 		if a.ID == id {
 			return a, nil
 		}
 	}
-	return nil, errors.New("article not found.")
+	return nil, errors.New("data not found.")
 }
 
-func dbGetArticleBySlug(slug string) (*Article, error) {
-	for _, a := range articles {
-		if a.Slug == slug {
-			return a, nil
-		}
-	}
-	return nil, errors.New("article not found.")
-}
+// func dbGetArticleBySlug(slug string) (*Article, error) {
+// 	for _, a := range data {
+// 		// if a.Slug == slug {
+// 		// 	return a, nil
+// 		// }
+// 	}
+// return nil, errors.New("article not found.")
+// }
 
 func dbUpdateArticle(id string, article *Article) (*Article, error) {
-	for i, a := range articles {
+	for i, a := range data {
 		if a.ID == id {
-			articles[i] = article
+			data[i] = article
 			return article, nil
 		}
 	}
@@ -402,20 +402,20 @@ func dbUpdateArticle(id string, article *Article) (*Article, error) {
 }
 
 func dbRemoveArticle(id string) (*Article, error) {
-	for i, a := range articles {
+	for i, a := range data {
 		if a.ID == id {
-			articles = append((articles)[:i], (articles)[i+1:]...)
+			data = append((data)[:i], (data)[i+1:]...)
 			return a, nil
 		}
 	}
 	return nil, errors.New("article not found.")
 }
 
-func dbGetUser(id int64) (*User, error) {
-	for _, u := range users {
-		if u.ID == id {
-			return u, nil
-		}
-	}
-	return nil, errors.New("user not found.")
-}
+// func dbGetUser(id int64) (*User, error) {
+// 	for _, u := range users {
+// 		if u.ID == id {
+// 			return u, nil
+// 		}
+// 	}
+// 	return nil, errors.New("user not found.")
+// }
