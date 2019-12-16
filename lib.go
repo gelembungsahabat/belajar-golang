@@ -22,7 +22,7 @@ func DataList(w http.ResponseWriter, r *http.Request) {
 // ArticleCtx middleware is used to load an "data" object from
 // the URL parameters passed through as the request. In case
 // the Article could not be found, we stop here and return a 404.
-func ArticleCtx(next http.Handler) http.Handler {
+func DataContext(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var article *Article
 		var err error
@@ -53,7 +53,7 @@ func SearchArticles(w http.ResponseWriter, r *http.Request) {
 
 // CreateArticle persists the posted Article and returns it
 // back to the client as an acknowledgement.
-func CreateArticle(w http.ResponseWriter, r *http.Request) {
+func CreateData(w http.ResponseWriter, r *http.Request) {
 	data := &ArticleRequest{}
 	if err := render.Bind(r, data); err != nil {
 		render.Render(w, r, ErrInvalidRequest(err))
@@ -71,7 +71,7 @@ func CreateArticle(w http.ResponseWriter, r *http.Request) {
 // fetches the Article right off the context, as its understood that
 // if we made it this far, the Article must be on the context. In case
 // its not due to a bug, then it will panic, and our Recoverer will save us.
-func GetArticle(w http.ResponseWriter, r *http.Request) {
+func GetData(w http.ResponseWriter, r *http.Request) {
 	// Assume if we've reach this far, we can access the article
 	// context because this handler is a child of the ArticleCtx
 	// middleware. The worst case, the recoverer middleware will save us.
