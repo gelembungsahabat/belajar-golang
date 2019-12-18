@@ -1,40 +1,58 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
-	"github.com/go-chi/render"
+	"github.com/gorilla/mux"
 )
 
+type blog struct {
+	Id    string `"json":"ID"`
+	Judul string `"json":"Title"`
+	Isi   string `"json":"Isi"`
+}
+
+var Blog []blog
+
 func main() {
+	Blog = []blog{
+		blog{Id: "1", Judul: "haha", Isi: "haha"},
+		blog{Id: "2", Judul: "haha", Isi: "haha"},
+	}
+	handleRequest()
+}
 
-	r := chi.NewRouter()
+func handleRequest() {
+	r := mux.NewRouter().StrictSlash(true)
 
-	r.Use(middleware.Logger)
-	r.Use(render.SetContentType(render.ContentTypeJSON))
+	r.HandleFunc("/", homePage)
+	r.HandleFunc("/blog", returnAllPostingan)
+	r.HandleFunc("/blog/{id}", returnSinglePostingan)
 
-	//GET
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Wildan Ganteng!"))
-	})
+	log.Fatal(http.ListenAndServe(":1320", r))
+}
 
-	r.Get("/Open", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Selamat Datang di Blog Kami !"))
-	})
+func homePage(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "halo ahaha")
+	fmt.Println("hahaha")
+}
 
-	//GET with ID
-	r.Route("/Blog", func(r chi.Router) {
-		r.With(paginate).Get("/", DataList)
-		r.Post("/", CreateData)
+func returnAllPostingan(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("endpoint hit: returnAllPostingan")
+	json.NewEncoder(w).Encode(Blog)
+}
 
-		r.Route("/{data_ID}", func(r chi.Router) {
+func returnSinglePostingan(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("endpoint hit: returnSinglePostingan")
+	variabel := mux.Vars(r)
+	key := variabel["id"]
 
-			r.Use(DataContext)  // Load the *Article on the request context
-			r.Get("/", GetData) // GET /Blog/123
-		})
-	})
-
-	http.ListenAndServe(":1320", r)
+	for _, postingan := range Blog {
+		if postingan.Id == key {
+			json.NewEncoder(w).Encode(postingan)
+		}
+	}
 }
