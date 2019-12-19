@@ -3,10 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"io/ioutil"
 	"net/http"
+	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 )
 
 type blog struct {
@@ -15,10 +17,10 @@ type blog struct {
 	Isi   string `"json":"Isi"`
 }
 
-var Blog []blog
+var blogs []blog
 
 func main() {
-	Blog = []blog{
+	blogs = []blog{
 		blog{Id: "1", Judul: "haha", Isi: "haha"},
 		blog{Id: "2", Judul: "haha", Isi: "haha"},
 	}
@@ -26,13 +28,19 @@ func main() {
 }
 
 func handleRequest() {
-	r := mux.NewRouter().StrictSlash(true)
 
-	r.HandleFunc("/", homePage)
-	r.HandleFunc("/blog", returnAllPostingan)
-	r.HandleFunc("/blog/{id}", returnSinglePostingan)
+	r := chi.NewRouter()
 
-	log.Fatal(http.ListenAndServe(":1320", r))
+	r.Use(middleware.Logger)
+	r.Get("/", homePage)
+
+	r.Route("/blog", func(r chi.Router) {
+		r.Get("/", allPostingan)
+		r.Get("/{id}", singlePostingan)
+		r.Post("/", createPostingan)
+	})
+
+	http.ListenAndServe(":1320", r)
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -40,19 +48,35 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("hahaha")
 }
 
-func returnAllPostingan(w http.ResponseWriter, r *http.Request) {
+func allPostingan(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("endpoint hit: returnAllPostingan")
-	json.NewEncoder(w).Encode(Blog)
+	json.NewEncoder(w).Encode(blogs)
 }
 
-func returnSinglePostingan(w http.ResponseWriter, r *http.Request) {
+func singlePostingan(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("endpoint hit: returnSinglePostingan")
-	variabel := mux.Vars(r)
-	key := variabel["id"]
 
-	for _, postingan := range Blog {
-		if postingan.Id == key {
+	for _, postingan := range blogs {
+		if postingan.Id == chi.URLParam(r, "id") {
 			json.NewEncoder(w).Encode(postingan)
 		}
 	}
+}
+
+func createPostingan(w http.ResponseWriter, r *http.Request) {
+	data, _ := ioutil.ReadAll(r.Body)
+	var Blog blog
+	json.Unmarshal(data, &Blog)
+
+	if Blog.Id = strconv.Itoa(len(blogs)); Blog.Id != "0" {
+		index, err := strconv.Atoi(blogs[len(blogs)-1].Id)
+		if err != nil {
+			panic(err)
+		}
+		Blog.Id = strconv.Itoa(index + 1)
+	}
+
+	blogs = append(blogs, Blog)
+	json.NewEncoder(w).Encode(Blog.Id)
+
 }
