@@ -3,5 +3,5 @@
 For running the server : 
 
 ```
-go run *.go
+go run main.go
 ```
