@@ -11,14 +11,17 @@ import (
 	"github.com/go-chi/chi/middleware"
 )
 
+//'blogs' sebagai array dari 'blog'
+var blogs []blog
+
+//struktur data dari variabel 'blog'
 type blog struct {
 	Id    string `"json":"ID"`
 	Judul string `"json":"Title"`
 	Isi   string `"json":"Isi"`
 }
 
-var blogs []blog
-
+//fungsi utama
 func main() {
 	blogs = []blog{
 		blog{Id: "1", Judul: "haha", Isi: "haha"},
@@ -27,6 +30,7 @@ func main() {
 	handleRequest()
 }
 
+//fungsi untuk routing
 func handleRequest() {
 
 	r := chi.NewRouter()
@@ -43,16 +47,19 @@ func handleRequest() {
 	http.ListenAndServe(":1320", r)
 }
 
+//fungsi untuk menampilkan homepage(root)
 func homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "halo ahaha")
 	fmt.Println("hahaha")
 }
 
+//fungsi untuk menampilkan semua data dari array 'blogs'
 func allPostingan(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("endpoint hit: returnAllPostingan")
 	json.NewEncoder(w).Encode(blogs)
 }
 
+//fungsi untuk menampilkan data array 'blogs' berdasarkan ID
 func singlePostingan(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("endpoint hit: returnSinglePostingan")
 
@@ -63,6 +70,7 @@ func singlePostingan(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//fungsi untuk menambahkan data ke array 'blogs'
 func createPostingan(w http.ResponseWriter, r *http.Request) {
 	data, _ := ioutil.ReadAll(r.Body)
 	var Blog blog
