@@ -16,16 +16,16 @@ var blogs []blog
 
 //struktur data dari variabel 'blog'
 type blog struct {
-	Id    string `"json":"ID"`
-	Judul string `"json":"Title"`
-	Isi   string `"json":"Isi"`
+	ID    string `json:"blog_id"`
+	Judul string `json:"title"`
+	Isi   string `json:"isi"`
 }
 
 //fungsi utama
 func main() {
 	blogs = []blog{
-		blog{Id: "1", Judul: "haha", Isi: "haha"},
-		blog{Id: "2", Judul: "haha", Isi: "haha"},
+		blog{ID: "1", Judul: "haha", Isi: "haha"},
+		blog{ID: "2", Judul: "haha", Isi: "haha"},
 	}
 	handleRequest()
 }
@@ -40,8 +40,11 @@ func handleRequest() {
 
 	r.Route("/blog", func(r chi.Router) {
 		r.Get("/", allPostingan)
-		r.Get("/{id}", singlePostingan)
+		r.Get("/{ID}", singlePostingan)
 		r.Post("/", createPostingan)
+		r.Delete("/{ID}", deletePostingan)
+		r.Put("/{ID}", updatePostingan)
+
 	})
 
 	http.ListenAndServe(":1320", r)
@@ -49,12 +52,14 @@ func handleRequest() {
 
 //fungsi untuk menampilkan homepage(root)
 func homePage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, "halo ahaha")
 	fmt.Println("hahaha")
 }
 
 //fungsi untuk menampilkan semua data dari array 'blogs'
 func allPostingan(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	fmt.Println("endpoint hit: returnAllPostingan")
 	json.NewEncoder(w).Encode(blogs)
 }
@@ -63,8 +68,9 @@ func allPostingan(w http.ResponseWriter, r *http.Request) {
 func singlePostingan(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("endpoint hit: returnSinglePostingan")
 
+	w.Header().Set("Content-Type", "application/json")
 	for _, postingan := range blogs {
-		if postingan.Id == chi.URLParam(r, "id") {
+		if postingan.ID == chi.URLParam(r, "ID") {
 			json.NewEncoder(w).Encode(postingan)
 		}
 	}
@@ -76,15 +82,43 @@ func createPostingan(w http.ResponseWriter, r *http.Request) {
 	var Blog blog
 	json.Unmarshal(data, &Blog)
 
-	if Blog.Id = strconv.Itoa(len(blogs)); Blog.Id != "0" {
-		index, err := strconv.Atoi(blogs[len(blogs)-1].Id)
+	if Blog.ID = strconv.Itoa(len(blogs)); Blog.ID != "0" {
+		index, err := strconv.Atoi(blogs[len(blogs)-1].ID)
 		if err != nil {
 			panic(err)
 		}
-		Blog.Id = strconv.Itoa(index + 1)
+		Blog.ID = strconv.Itoa(index + 1)
 	}
 
 	blogs = append(blogs, Blog)
-	json.NewEncoder(w).Encode(Blog.Id)
+	json.NewEncoder(w).Encode(Blog.ID)
 
+}
+
+//fungsi untuk DELETE
+func deletePostingan(w http.ResponseWriter, r *http.Request) {
+	for index, blog := range blogs {
+		if blog.ID == chi.URLParam(r, "ID") {
+			blogs = append(blogs[:index], blogs[index+1:]...)
+			fmt.Printf("DELETE DATA")
+			json.NewEncoder(w).Encode("Berhasil hore")
+		}
+	}
+}
+
+func updatePostingan(w http.ResponseWriter, r *http.Request) {
+	data, _ := ioutil.ReadAll(r.Body)
+	var Blog blog
+	json.Unmarshal(data, &Blog)
+	bid := chi.URLParam(r, "ID")
+
+	for index, b := range blogs {
+		if b.ID == bid {
+			blogs[index] = blog{
+				ID:    b.ID,
+				Judul: Blog.Judul,
+				Isi:   Blog.Isi,
+			}
+		}
+	}
 }
